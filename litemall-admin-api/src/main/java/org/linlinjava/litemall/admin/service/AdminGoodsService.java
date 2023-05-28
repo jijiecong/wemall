@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.linlinjava.litemall.admin.dto.GoodsAllinone;
 import org.linlinjava.litemall.admin.vo.CatVo;
 import org.linlinjava.litemall.core.qcode.QCodeService;
+import org.linlinjava.litemall.core.util.JacksonUtil;
 import org.linlinjava.litemall.core.util.ResponseUtil;
 import org.linlinjava.litemall.db.domain.*;
 import org.linlinjava.litemall.db.service.*;
@@ -210,6 +211,42 @@ public class AdminGoodsService {
             cartService.updateProduct(product.getId(), goods.getGoodsSn(), goods.getName(), product.getPrice(), product.getUrl());
         }
 
+        return ResponseUtil.ok();
+    }
+
+    /**
+     * 商品上架
+     *
+     */
+    public Object onSale(LitemallGoods goods) {
+        Integer id = goods.getId();
+        if (id == null) {
+            return ResponseUtil.badArgument();
+        }
+
+        Integer gid = goods.getId();
+        LitemallGoods updateGoods = new LitemallGoods();
+        updateGoods.setId(gid);
+        updateGoods.setIsOnSale(true);
+        goodsService.updateById(updateGoods);
+        return ResponseUtil.ok();
+    }
+
+    /**
+     * 商品下架
+     *
+     */
+    public Object offSale(LitemallGoods goods) {
+        Integer id = goods.getId();
+        if (id == null) {
+            return ResponseUtil.badArgument();
+        }
+
+        Integer gid = goods.getId();
+        LitemallGoods updateGoods = new LitemallGoods();
+        updateGoods.setId(gid);
+        updateGoods.setIsOnSale(false);
+        goodsService.updateById(updateGoods);
         return ResponseUtil.ok();
     }
 

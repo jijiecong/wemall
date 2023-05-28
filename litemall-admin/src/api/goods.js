@@ -40,6 +40,30 @@ export function editGoods(data) {
   })
 }
 
+export function goodsOnSale(data) {
+  return request({
+    url: '/goods/onSale',
+    method: 'post',
+    data
+  })
+}
+
+export function goodsOffSale(data) {
+  return request({
+    url: '/goods/offSale',
+    method: 'post',
+    data
+  })
+}
+
+export function importGoods(data) {
+  return request({
+    url: '/goods/import',
+    method: 'post',
+    data
+  })
+}
+
 export function listCatAndBrand() {
   return request({
     url: '/goods/catAndBrand',

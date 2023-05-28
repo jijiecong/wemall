@@ -33,20 +33,26 @@
             <el-radio :label="false">下架</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="排序">
+          <el-input v-model="goods.sort" placeholder="默认为0" />
+        </el-form-item>
+        <el-form-item label="限购数量">
+          <el-input v-model="goods.limitBuy" placeholder="默认不限购" />
+        </el-form-item>
 
-        <!--        <el-form-item label="商品图片">-->
-        <!--          <el-upload-->
-        <!--            :action="uploadPath"-->
-        <!--            :show-file-list="false"-->
-        <!--            :headers="headers"-->
-        <!--            :on-success="uploadPicUrl"-->
-        <!--            class="avatar-uploader"-->
-        <!--            accept=".jpg,.jpeg,.png,.gif"-->
-        <!--          >-->
-        <!--            <img v-if="goods.picUrl" :src="goods.picUrl" class="avatar">-->
-        <!--            <i v-else class="el-icon-plus avatar-uploader-icon" />-->
-        <!--          </el-upload>-->
-        <!--        </el-form-item>-->
+        <el-form-item label="商品图片">
+          <el-upload
+            :action="uploadPath"
+            :show-file-list="false"
+            :headers="headers"
+            :on-success="uploadPicUrl"
+            class="avatar-uploader"
+            accept=".jpg,.jpeg,.png,.gif"
+          >
+            <img v-if="goods.picUrl" :src="goods.picUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </el-form-item>
 
         <el-form-item label="宣传画廊（商详页滚动图）">
           <el-upload
@@ -106,17 +112,17 @@
 
     <el-card class="box-card">
       <h3>商品规格</h3>
-      <el-row :gutter="20" type="flex" align="middle" style="padding:20px 0;">
-        <el-col :span="10">
-          <el-radio-group v-model="multipleSpec" @change="specChanged">
-            <el-radio-button :label="false">默认标准规格</el-radio-button>
-            <!--            <el-radio-button :label="true">多规格支持</el-radio-button>-->
-          </el-radio-group>
-        </el-col>
-        <el-col v-if="multipleSpec" :span="10">
-          <el-button :plain="true" type="primary" @click="handleSpecificationShow">添加</el-button>
-        </el-col>
-      </el-row>
+      <!--      <el-row :gutter="20" type="flex" align="middle" style="padding:20px 0;">-->
+      <!--        <el-col :span="10">-->
+      <!--          <el-radio-group v-model="multipleSpec" @change="specChanged">-->
+      <!--            <el-radio-button :label="false" >默认标准规格</el-radio-button>-->
+      <!--                        <el-radio-button :label="true">多规格支持</el-radio-button>-->
+      <!--          </el-radio-group>-->
+      <!--        </el-col>-->
+      <!--        <el-col v-if="multipleSpec" :span="10">-->
+      <!--          <el-button :plain="true" type="primary" @click="handleSpecificationShow">添加</el-button>-->
+      <!--        </el-col>-->
+      <!--      </el-row>-->
 
       <el-table :data="specifications">
         <el-table-column property="specification" label="规格名" />

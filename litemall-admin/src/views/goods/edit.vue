@@ -30,26 +30,32 @@
             <el-radio :label="true">热卖</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="是否在售" prop="isOnSale">
+        <el-form-item label="是否上架" prop="isOnSale">
           <el-radio-group v-model="goods.isOnSale">
-            <el-radio :label="true">在售</el-radio>
-            <el-radio :label="false">未售</el-radio>
+            <el-radio :label="true">上架</el-radio>
+            <el-radio :label="false">下架</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="排序">
+          <el-input v-model="goods.sort" placeholder="默认为0" />
+        </el-form-item>
+        <el-form-item label="限购数量">
+          <el-input v-model="goods.limitBuy" placeholder="默认不限购" />
+        </el-form-item>
 
-        <!--        <el-form-item label="商品图片">-->
-        <!--          <el-upload-->
-        <!--            :headers="headers"-->
-        <!--            :action="uploadPath"-->
-        <!--            :show-file-list="false"-->
-        <!--            :on-success="uploadPicUrl"-->
-        <!--            class="avatar-uploader"-->
-        <!--            accept=".jpg,.jpeg,.png,.gif"-->
-        <!--          >-->
-        <!--            <img v-if="goods.picUrl" :src="goods.picUrl" class="avatar">-->
-        <!--            <i v-else class="el-icon-plus avatar-uploader-icon" />-->
-        <!--          </el-upload>-->
-        <!--        </el-form-item>-->
+        <el-form-item label="商品图片">
+          <el-upload
+            :headers="headers"
+            :action="uploadPath"
+            :show-file-list="false"
+            :on-success="uploadPicUrl"
+            class="avatar-uploader"
+            accept=".jpg,.jpeg,.png,.gif"
+          >
+            <img v-if="goods.picUrl" :src="goods.picUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon" />
+          </el-upload>
+        </el-form-item>
 
         <el-form-item label="宣传画廊（商详页滚动图）">
           <el-upload
@@ -116,11 +122,11 @@
             <img v-if="scope.row.picUrl" :src="scope.row.picUrl" width="40">
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作" width="200" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-button type="primary" size="mini" @click="handleSpecificationShow(scope.row)">设置</el-button>
-          </template>
-        </el-table-column>
+        <!--        <el-table-column align="center" label="操作" width="200" class-name="small-padding fixed-width">-->
+        <!--          <template slot-scope="scope">-->
+        <!--            <el-button type="primary" size="mini" @click="handleSpecificationShow(scope.row)">设置</el-button>-->
+        <!--          </template>-->
+        <!--        </el-table-column>-->
       </el-table>
 
       <el-dialog :visible.sync="specVisiable" title="设置规格">

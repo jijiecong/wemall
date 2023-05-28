@@ -26,6 +26,8 @@
     <result column="add_time" jdbcType="TIMESTAMP" property="addTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
     <result column="deleted" jdbcType="BIT" property="deleted" />
+    <result column="sort" jdbcType="INTEGER" property="sort" />
+    <result column="limit_buy" jdbcType="INTEGER" property="limitBuy" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="org.linlinjava.litemall.db.domain.LitemallGoods">
     <!--
@@ -145,7 +147,7 @@
     -->
     id, goods_sn, `name`, category_id, brand_id, gallery, keywords, brief, is_on_sale, 
     sort_order, pic_url, share_url, is_new, is_hot, unit, counter_price, retail_price, 
-    add_time, update_time, deleted
+    add_time, update_time, deleted, sort, limit_buy
   </sql>
   <sql id="Blob_Column_List">
     <!--
@@ -307,14 +309,14 @@
       sort_order, pic_url, share_url, 
       is_new, is_hot, unit, counter_price, 
       retail_price, add_time, update_time, 
-      deleted, detail)
+      deleted, detail, sort, limit_buy)
     values (#{goodsSn,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{categoryId,jdbcType=INTEGER}, 
       #{brandId,jdbcType=INTEGER}, #{gallery,jdbcType=VARCHAR,typeHandler=org.linlinjava.litemall.db.mybatis.JsonStringArrayTypeHandler}, 
       #{keywords,jdbcType=VARCHAR}, #{brief,jdbcType=VARCHAR}, #{isOnSale,jdbcType=BIT}, 
       #{sortOrder,jdbcType=SMALLINT}, #{picUrl,jdbcType=VARCHAR}, #{shareUrl,jdbcType=VARCHAR}, 
       #{isNew,jdbcType=BIT}, #{isHot,jdbcType=BIT}, #{unit,jdbcType=VARCHAR}, #{counterPrice,jdbcType=DECIMAL}, 
       #{retailPrice,jdbcType=DECIMAL}, #{addTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, 
-      #{deleted,jdbcType=BIT}, #{detail,jdbcType=LONGVARCHAR})
+      #{deleted,jdbcType=BIT}, #{detail,jdbcType=LONGVARCHAR}, #{sort,jdbcType=INTEGER}, #{limitBuy,jdbcType=INTEGER})
   </insert>
   <insert id="insertSelective" parameterType="org.linlinjava.litemall.db.domain.LitemallGoods">
     <!--
@@ -386,6 +388,12 @@
       <if test="detail != null">
         detail,
       </if>
+      <if test="sort != null">
+        sort,
+      </if>
+      <if test="limitBuy != null">
+        limit_buy,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="goodsSn != null">
@@ -447,6 +455,12 @@
       </if>
       <if test="detail != null">
         #{detail,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="sort != null">
+        #{sort,jdbcType=INTEGER},
+      </if>
+      <if test="limitBuy != null">
+        #{limitBuy,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -530,6 +544,12 @@
       <if test="record.detail != null">
         detail = #{record.detail,jdbcType=LONGVARCHAR},
       </if>
+      <if test="record.sort != null">
+        sort = #{record.sort,jdbcType=INTEGER},
+      </if>
+      <if test="record.limitBuy != null">
+        limit_buy = #{record.limitBuy,jdbcType=INTEGER},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -561,7 +581,9 @@
       add_time = #{record.addTime,jdbcType=TIMESTAMP},
       update_time = #{record.updateTime,jdbcType=TIMESTAMP},
       deleted = #{record.deleted,jdbcType=BIT},
-      detail = #{record.detail,jdbcType=LONGVARCHAR}
+      detail = #{record.detail,jdbcType=LONGVARCHAR},
+      sort = #{record.sort,jdbcType=INTEGER},
+      limit_buy = #{record.limitBuy,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -591,7 +613,9 @@
       retail_price = #{record.retailPrice,jdbcType=DECIMAL},
       add_time = #{record.addTime,jdbcType=TIMESTAMP},
       update_time = #{record.updateTime,jdbcType=TIMESTAMP},
-      deleted = #{record.deleted,jdbcType=BIT}
+      deleted = #{record.deleted,jdbcType=BIT},
+      sort = #{record.sort,jdbcType=INTEGER},
+      limit_buy = #{record.limitBuy,jdbcType=INTEGER}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -663,6 +687,12 @@
       <if test="detail != null">
         detail = #{detail,jdbcType=LONGVARCHAR},
       </if>
+      <if test="sort != null">
+        sort = #{sort,jdbcType=INTEGER},
+      </if>
+      <if test="limitBuy != null">
+        limit_buy = #{limitBuy,jdbcType=LONGVARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -691,7 +721,9 @@
       add_time = #{addTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
       deleted = #{deleted,jdbcType=BIT},
-      detail = #{detail,jdbcType=LONGVARCHAR}
+      detail = #{detail,jdbcType=LONGVARCHAR},
+      sort = #{sort,jdbcType=INTEGER},
+      limit_buy = #{limitBuy,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
   <update id="updateByPrimaryKey" parameterType="org.linlinjava.litemall.db.domain.LitemallGoods">
@@ -718,7 +750,9 @@
       retail_price = #{retailPrice,jdbcType=DECIMAL},
       add_time = #{addTime,jdbcType=TIMESTAMP},
       update_time = #{updateTime,jdbcType=TIMESTAMP},
-      deleted = #{deleted,jdbcType=BIT}
+      deleted = #{deleted,jdbcType=BIT},
+      sort = #{sort,jdbcType=INTEGER},
+      limit_buy = #{limitBuy,jdbcType=INTEGER
     where id = #{id,jdbcType=INTEGER}
   </update>
   <select id="selectOneByExample" parameterType="org.linlinjava.litemall.db.domain.LitemallGoodsExample" resultMap="BaseResultMap">

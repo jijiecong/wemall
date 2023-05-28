@@ -5,7 +5,7 @@
         <el-input v-model="dataForm.litemall_order_unconfirm" class="input-width">
           <template slot="append"> 元</template>
         </el-input>
-        <span class="info">可配送</span>
+        <span class="info">可下单配送</span>
       </el-form-item>
       <!--      <el-form-item label="用户下单后超时" prop="litemall_order_unpaid">-->
       <!--        <el-input v-model="dataForm.litemall_order_unpaid" class="input-width">-->

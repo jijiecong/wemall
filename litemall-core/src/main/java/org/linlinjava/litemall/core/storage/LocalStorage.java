@@ -1,6 +1,7 @@
 package org.linlinjava.litemall.core.storage;
 
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
@@ -34,6 +35,10 @@ public class LocalStorage implements Storage {
 
     public void setStoragePath(String storagePath) {
         this.storagePath = storagePath;
+        //获取当前的日期，拼接进路径，防止所有图片都在一个文件夹中
+//        Date date = new Date();
+//        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+//        String dateStr = df.format(date);
 
         this.rootLocation = Paths.get(storagePath);
         try {
