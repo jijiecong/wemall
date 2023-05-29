@@ -374,6 +374,7 @@ ADD COLUMN `sort` int(11) NOT NULL DEFAULT 0 COMMENT '商品排序' AFTER `delet
 ADD COLUMN `limit_buy` int(11) NOT NULL DEFAULT 0 COMMENT '订单限购数量' AFTER `sort`;
 MODIFY COLUMN `unit` varchar(31) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '件' COMMENT '商品单位，例如件、盒' AFTER `is_hot`;
 
+
 --
 -- Table structure for table `litemall_goods_attribute`
 --
