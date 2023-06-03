@@ -22,7 +22,7 @@ import java.util.List;
 public class OrderUtil {
 
     /**
-     * 此处实际只需要：201-订单生成；102-用户取消订单；104：管理员取消订单；401：订单完成；
+     * 此处实际只需要：201-待发货；102-用户取消订单；104：商家取消订单；401：订单完成；
      */
     public static final Short STATUS_PAY = 201;
     public static final Short STATUS_CANCEL = 102;
@@ -52,7 +52,7 @@ public class OrderUtil {
         }
 
         if (status == 104) {
-            return "已取消";
+            return "已取消(商家)";
         }
 
         if (status == 201) {
@@ -91,31 +91,16 @@ public class OrderUtil {
         int status = order.getOrderStatus().intValue();
         OrderHandleOption handleOption = new OrderHandleOption();
 
-        if (status == 101) {
-            // 如果订单没有被取消，且没有支付，则可支付，可取消
-            handleOption.setCancel(true);
-            handleOption.setPay(true);
-        } else if (status == 102 || status == 103 || status == 104) {
+        if (status == 102 || status == 104) {
             // 如果订单已经取消或是已完成，则可删除
             handleOption.setDelete(true);
         } else if (status == 201) {
-            // 如果订单已付款，没有发货，则可退款
-            handleOption.setRefund(true);
-        } else if (status == 202 || status == 204) {
-            // 如果订单申请退款中，没有相关操作
-        } else if (status == 203) {
-            // 如果订单已经退款，则可删除
+            // 待发货，则可取消
+            handleOption.setCancel(true);
+        } else if (status == 401) {
+            // 如果订单完成，则可删除和再次购买
             handleOption.setDelete(true);
-        } else if (status == 301) {
-            // 如果订单已经发货，没有收货，则可收货操作,
-            // 此时不能取消订单
-            handleOption.setConfirm(true);
-        } else if (status == 401 || status == 402) {
-            // 如果订单已经支付，且已经收货，则可删除、去评论、申请售后和再次购买
-            handleOption.setDelete(true);
-            handleOption.setComment(true);
             handleOption.setRebuy(true);
-            handleOption.setAftersale(true);
         } else {
             throw new IllegalStateException("status不支持");
         }
@@ -132,10 +117,10 @@ public class OrderUtil {
         List<Short> status = new ArrayList<Short>(2);
 
         if (showType.equals(1)) {
-            // 待付款订单
+            // 待发货订单
             status.add((short) 201);
         } else if (showType.equals(2)) {
-            // 待发货订单
+            // 已完成订单
             status.add((short) 401);
         } else if (showType.equals(3)) {
             // 已取消订单-包含用户取消和管理员取消

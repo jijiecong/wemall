@@ -9,6 +9,8 @@ import com.github.binarywang.wxpay.bean.result.BaseWxPayResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
+import com.google.common.collect.Lists;
+import io.swagger.models.auth.In;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +43,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.linlinjava.litemall.wx.util.WxResponseCode.*;
 
@@ -104,6 +107,8 @@ public class WxOrderService {
     private TaskService taskService;
     @Autowired
     private LitemallAftersaleService aftersaleService;
+    @Autowired
+    private LitemallGoodsService goodsService;
 
     /**
      * 订单列表
@@ -226,6 +231,188 @@ public class WxOrderService {
 
         return ResponseUtil.ok(result);
 
+    }
+
+    /**
+     * 提交订单
+     * <p>
+     * 1. 创建订单表项和订单商品表项;
+     * 2. 购物车清空;
+     * 3. 优惠券设置已用;
+     * 4. 商品货品库存减少;
+     * 5. 如果是团购商品，则创建团购活动表项。
+     *
+     * @param userId 用户ID
+     * @param body   订单信息，{ cartId：xxx, addressId: xxx, couponId: xxx, message: xxx, grouponRulesId: xxx,  grouponLinkId: xxx}
+     * @return 提交订单操作结果
+     */
+    @Transactional
+    public Object submitV2(Integer userId, String body) {
+        if (userId == null) {
+            return ResponseUtil.unlogin();
+        }
+        if (body == null) {
+            return ResponseUtil.badArgument();
+        }
+        LitemallUser user = userService.findById(userId);
+        if (Objects.isNull(user)) {
+            return ResponseUtil.fail(402, "用户不存在");
+        }
+        Integer cartId = JacksonUtil.parseInteger(body, "cartId");
+        Integer addressId = JacksonUtil.parseInteger(body, "addressId");
+        String message = JacksonUtil.parseString(body, "message");
+
+        if (cartId == null || addressId == null) {
+            return ResponseUtil.badArgument();
+        }
+
+        // 收货地址
+        LitemallAddress checkedAddress = addressService.query(userId, addressId);
+        if (checkedAddress == null) {
+            return ResponseUtil.badArgument();
+        }
+
+        // 货品价格
+        List<LitemallCart> checkedGoodsList = null;
+        if (cartId.equals(0)) {
+            checkedGoodsList = cartService.queryByUidAndChecked(userId);
+        } else {
+            LitemallCart cart = cartService.findById(cartId);
+            checkedGoodsList = new ArrayList<>(1);
+            checkedGoodsList.add(cart);
+        }
+        if (checkedGoodsList.size() == 0) {
+            return ResponseUtil.badArgumentValue();
+        }
+
+        // todo 实时查商品信息
+        Map<Integer, LitemallGoods> goodsMapBatch = new HashMap<>();
+        List<Integer> totalGoodsIdList = checkedGoodsList.stream()
+                .map(LitemallCart::getGoodsId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        List<List<Integer>> goodsIdListBatch = Lists.partition(totalGoodsIdList, 20);
+
+        for (List<Integer> goodsIdList: goodsIdListBatch) {
+            List<LitemallGoods> goodsList = goodsService.queryByIdList(goodsIdList);
+            Map<Integer, LitemallGoods> goodsMap = goodsList.stream().collect(Collectors.toMap(LitemallGoods::getId, a -> a, (k1, k2) -> k1));
+            goodsMapBatch.putAll(goodsMap);
+        }
+
+
+        BigDecimal checkedGoodsPrice = new BigDecimal(0);
+        for (LitemallCart checkGoods : checkedGoodsList) {
+            checkedGoodsPrice = checkedGoodsPrice.add(checkGoods.getPrice().multiply(new BigDecimal(checkGoods.getNumber())));
+            LitemallGoods goods = goodsMapBatch.get(checkGoods.getGoodsId());
+            if (Objects.isNull(goods)) {
+                return ResponseUtil.fail(503, "商品" + checkGoods.getGoodsName() + "不可购买");
+            }
+            checkGoods.setSort(goods.getSort());
+            checkGoods.setLimitBuy(goods.getLimitBuy());
+        }
+
+        // todo 校验是否满足订单起送金额
+        // 根据订单商品总价计算运费，满足条件（例如88元）则免运费，否则需要支付运费（例如8元）；
+        if (checkedGoodsPrice.compareTo(SystemConfig.getFreightLimit()) < 0) {
+            return ResponseUtil.fail(503, "订单金额需满" + SystemConfig.getFreightLimit() + "元才可下单");
+        }
+
+        // todo 判断限购
+        for (LitemallCart checkGoods : checkedGoodsList) {
+            if (Objects.nonNull(checkGoods.getLimitBuy())
+                    && checkGoods.getLimitBuy() != 0
+                    && checkGoods.getNumber() > checkGoods.getLimitBuy()) {
+                return ResponseUtil.fail(503, "商品" + checkGoods.getGoodsName() + "限购" + checkGoods.getLimitBuy() + "件");
+            }
+        }
+
+        // todo 将商品按sort降序排列表
+        List<LitemallCart> checkedGoodsListSorted = checkedGoodsList.stream().sorted(Comparator.comparing(LitemallCart::getSort).reversed())
+                .collect(Collectors.toList());
+
+        // 运费为0
+        BigDecimal freightPrice = new BigDecimal(0);
+
+        // 可以使用的其他钱，例如用户积分
+        BigDecimal integralPrice = new BigDecimal(0);
+
+        // 订单费用
+        BigDecimal orderTotalPrice = checkedGoodsPrice.add(freightPrice).max(new BigDecimal(0));
+        // 最终支付费用
+        BigDecimal actualPrice = orderTotalPrice.subtract(integralPrice);
+
+        Integer orderId = null;
+        LitemallOrder order = null;
+        // 订单
+        order = new LitemallOrder();
+        order.setUserId(userId);
+        order.setUserLevel(user.getUserLevel());
+        order.setOrderSn(orderService.generateOrderSn(userId));
+        order.setOrderStatus(OrderUtil.STATUS_PAY);
+        order.setConsignee(checkedAddress.getName());
+        order.setMobile(checkedAddress.getTel());
+        order.setMessage(message);
+        String detailedAddress = checkedAddress.getProvince() + checkedAddress.getCity() + checkedAddress.getCounty() + " " + checkedAddress.getAddressDetail();
+        order.setAddress(detailedAddress);
+        order.setGoodsPrice(checkedGoodsPrice);
+        order.setFreightPrice(freightPrice);
+        order.setCouponPrice(new BigDecimal(0));
+        order.setIntegralPrice(integralPrice);
+        order.setOrderPrice(orderTotalPrice);
+        order.setActualPrice(actualPrice);
+        order.setGrouponPrice(new BigDecimal(0));    //  团购价格
+
+        // 添加订单表项
+        orderService.add(order);
+        orderId = order.getId();
+
+        // 添加订单商品表项
+        for (LitemallCart cartGoods : checkedGoodsListSorted) {
+            // 订单商品
+            LitemallOrderGoods orderGoods = new LitemallOrderGoods();
+            orderGoods.setOrderId(order.getId());
+            orderGoods.setGoodsId(cartGoods.getGoodsId());
+            orderGoods.setGoodsSn(cartGoods.getGoodsSn());
+            orderGoods.setProductId(cartGoods.getProductId());
+            orderGoods.setGoodsName(cartGoods.getGoodsName());
+            orderGoods.setPicUrl(cartGoods.getPicUrl());
+            orderGoods.setPrice(cartGoods.getPrice());
+            orderGoods.setNumber(cartGoods.getNumber());
+            orderGoods.setSpecifications(cartGoods.getSpecifications());
+            orderGoods.setAddTime(LocalDateTime.now());
+
+            orderGoodsService.add(orderGoods);
+        }
+
+        // 删除购物车里面的商品信息
+        if(cartId.equals(0)){
+            cartService.clearGoods(userId);
+        }else{
+            cartService.deleteById(cartId);
+        }
+
+        // 商品货品数量减少
+        for (LitemallCart checkGoods : checkedGoodsListSorted) {
+            Integer productId = checkGoods.getProductId();
+            LitemallGoodsProduct product = productService.findById(productId);
+
+            int remainNumber = product.getNumber() - checkGoods.getNumber();
+            if (remainNumber < 0) {
+                throw new RuntimeException("下单的商品货品数量大于库存量");
+            }
+            if (productService.reduceStock(productId, checkGoods.getNumber()) == 0) {
+                throw new RuntimeException("商品货品库存减少失败");
+            }
+        }
+
+        // 下单即为支付完成
+        boolean payed = true;
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderId", orderId);
+        data.put("payed", payed);
+        data.put("grouponLinkId", 0);
+        return ResponseUtil.ok(data);
     }
 
     /**
@@ -591,7 +778,7 @@ public class WxOrderService {
         }
 
         // 返还优惠券
-        releaseCoupon(orderId);
+//        releaseCoupon(orderId);
 
         return ResponseUtil.ok();
     }

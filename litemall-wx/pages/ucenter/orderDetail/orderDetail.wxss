@@ -192,7 +192,7 @@ page {
 }
 
 .order-bottom .address .b {
-  height: 60rpx;
+  height: 120rpx;
   line-height: 60rpx;
   font-size: 30rpx;
   border-bottom: 1px solid #f4f4f4;

@@ -16,7 +16,7 @@ import java.util.List;
 
 @Service
 public class LitemallGoodsService {
-    Column[] columns = new Column[]{Column.id, Column.name, Column.brief, Column.picUrl, Column.isHot, Column.isNew, Column.counterPrice, Column.retailPrice};
+    Column[] columns = new Column[]{Column.id, Column.name, Column.brief, Column.picUrl, Column.isHot, Column.isNew, Column.counterPrice, Column.retailPrice, Column.sort, Column.limitBuy};
     @Resource
     private LitemallGoodsMapper goodsMapper;
 
@@ -255,6 +255,12 @@ public class LitemallGoodsService {
     public List<LitemallGoods> queryByIds(Integer[] ids) {
         LitemallGoodsExample example = new LitemallGoodsExample();
         example.or().andIdIn(Arrays.asList(ids)).andIsOnSaleEqualTo(true).andDeletedEqualTo(false);
+        return goodsMapper.selectByExampleSelective(example, columns);
+    }
+
+    public List<LitemallGoods> queryByIdList(List<Integer> idList) {
+        LitemallGoodsExample example = new LitemallGoodsExample();
+        example.or().andIdIn(idList).andIsOnSaleEqualTo(true).andDeletedEqualTo(false);
         return goodsMapper.selectByExampleSelective(example, columns);
     }
 }

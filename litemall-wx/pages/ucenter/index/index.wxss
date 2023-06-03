@@ -114,6 +114,7 @@ page {
   border-radius: 50%;
   margin-top: 20rpx;
   margin-left: 40rpx;
+  font-size: 21rpx;
 }
 
 .user_column_item_image {

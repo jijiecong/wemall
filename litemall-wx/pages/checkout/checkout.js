@@ -155,7 +155,9 @@ Page({
 
         const orderId = res.data.orderId;
         const grouponLinkId = res.data.grouponLinkId;
-        const payed = res.data.payed
+        // 不用付钱
+        // const payed = res.data.payed
+        const payed = true
         if (payed) {
           wx.redirectTo({
             url: '/pages/payResult/payResult?status=1&orderId=' + orderId

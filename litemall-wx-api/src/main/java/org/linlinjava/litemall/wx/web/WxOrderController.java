@@ -65,7 +65,7 @@ public class WxOrderController {
      */
     @PostMapping("submit")
     public Object submit(@LoginUser Integer userId, @RequestBody String body) {
-        return wxOrderService.submit(userId, body);
+        return wxOrderService.submitV2(userId, body);
     }
 
     /**
