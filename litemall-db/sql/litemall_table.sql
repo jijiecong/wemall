@@ -630,6 +630,9 @@ CREATE TABLE `litemall_order` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+ALTER TABLE `new_mall_test`.`litemall_order`
+ADD COLUMN `user_level` tinyint(3) NOT NULL DEFAULT 0 COMMENT '0 普通用户，1 VIP用户，2 高级VIP用户' AFTER `user_id`;
+
 --
 -- Table structure for table `litemall_order_goods`
 --
