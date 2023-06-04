@@ -7,10 +7,10 @@ pagehelper:
 spring:
   datasource:
     druid:
-      url:  jdbc:mysql://saas-db-saasqa01.internal.weimob.com:3306/new_mall_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false
+      url:  jdbc:mysql://sh-cdb-p7jffwby.sql.tencentcdb.com:63677/new_mall_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false
       driver-class-name:  com.mysql.cj.jdbc.Driver
-      username:  saas_w
-      password:  HR@yea*kGaL^kaf3
+      username:  langlanglang
+      password:  langlanglang2023
       initial-size:  10
       max-active:  50
       min-idle:  10
